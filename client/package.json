@@ -3,21 +3,23 @@
   "version": "1.0.0",
   "description": "A fullstack application with Vue 3 frontend and C# backend.",
   "scripts": {
-    "serve": "vite",
+    "dev": "vite",
     "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint ."
   },
   "dependencies": {
-    "bootstrap": "^5.0.0",
-    "vue": "^3.5.13",
-    "vue-router": "^4.0.0"
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.6",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.0"
   },
   "devDependencies": {
-    "eslint": "^7.0.0",
-    "eslint-plugin-vue": "^7.0.0",
-    "vite": "^2.0.0"
-  },
-  "author": "Your Name",
-  "license": "MIT",
-  "main": "index.js"
+    "@vitejs/plugin-vue": "^4.2.3",
+    "typescript": "^5.0.2",
+    "vite": "^4.3.9",
+    "vue-tsc": "^1.8.3",
+    "eslint": "^8.41.0",
+    "eslint-plugin-vue": "^9.14.1"
+  }
 }
