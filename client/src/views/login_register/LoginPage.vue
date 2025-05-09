@@ -46,16 +46,45 @@
   
   <script lang="ts">
   import { defineComponent, ref } from 'vue'
+  import { useRouter } from 'vue-router'
   
   export default defineComponent({
     name: 'LoginPage',
     setup() {
       const email = ref('')
       const password = ref('')
+      const router = useRouter()
   
-      const handleLogin = () => {
-        // TODO: Implement login logic here
-        console.log('Login attempted:', { email: email.value, password: password.value })
+      const handleLogin = async () => {
+        try {
+          const response = await fetch('http://localhost:5099/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: email.value,
+              password: password.value,
+            }),
+          })
+  
+          if (!response.ok) {
+            throw new Error('Login failed')
+          }
+  
+          const data = await response.json()
+          // Store token and user name in localStorage
+          localStorage.setItem('token', data.token)
+          localStorage.setItem('userName', data.name)
+          localStorage.setItem('userRole', data.role)
+          // Redirect to home page
+          router.push('/').then(() => {
+            window.location.reload()
+          })
+        } catch (error) {
+          console.error('Login error:', error)
+          alert('Login failed. Please check your credentials.')
+        }
       }
   
       return {

@@ -62,26 +62,60 @@
   
   <script lang="ts">
   import { defineComponent, ref } from 'vue'
+  import { useRouter } from 'vue-router'
   
   export default defineComponent({
     name: 'RegisterPage',
     setup() {
+      const router = useRouter()
       const name = ref('')
       const email = ref('')
       const password = ref('')
       const confirmPassword = ref('')
   
-      const handleRegister = () => {
+      const handleRegister = async () => {
+        // ตรวจสอบ password ตรงกัน
         if (password.value !== confirmPassword.value) {
           alert('Passwords do not match!')
           return
         }
-        // TODO: Implement registration logic here
-        console.log('Registration attempted:', {
-          name: name.value,
-          email: email.value,
-          password: password.value
-        })
+  
+        try {
+          const response = await fetch('http://localhost:5099/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: name.value,
+              email: email.value,
+              password: password.value,
+            }),
+          })
+  
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData || 'Registration failed')
+          }
+  
+          const data = await response.json()
+          
+          // Store token and user name in localStorage
+          localStorage.setItem('token', data.token)
+          localStorage.setItem('userName', data.name)
+          localStorage.setItem('userRole', data.role)
+          
+          // แสดงข้อความสำเร็จ
+          alert('Registration successful!')
+          
+          // redirect ไปหน้า home
+          router.push('/').then(() => {
+            window.location.reload()
+          })
+        } catch (error) {
+          console.error('Registration error:', error)
+          alert(error.message || 'Registration failed')
+        }
       }
   
       return {

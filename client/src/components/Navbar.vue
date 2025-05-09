@@ -36,11 +36,30 @@
               <i class="fas fa-shopping-cart"></i>
             </router-link>
           </li>
-          <li class="nav-item ms-2">
-            <router-link to="/login" class="btn btn-outline-light">
-              <i class="fas fa-sign-in-alt me-1"></i>Sign In
-            </router-link>
-          </li>
+          <!-- ส่วนที่เปลี่ยนแปลงตาม login status -->
+          <template v-if="isLoggedIn">
+            <li class="nav-item">
+              <span class="nav-link">Welcome, {{ userName }}!</span>
+            </li>
+            <!-- เพิ่มเมนูสำหรับ Admin -->
+            <li class="nav-item" v-if="isAdmin">
+              <router-link to="/admin" class="nav-link">
+                <i class="fas fa-users-cog"></i> Admin Panel
+              </router-link>
+            </li>
+            <li class="nav-item ms-2">
+              <button @click="handleLogout" class="btn btn-outline-light">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+              </button>
+            </li>
+          </template>
+          <template v-else>
+            <li class="nav-item ms-2">
+              <router-link to="/login" class="btn btn-outline-light">
+                <i class="fas fa-sign-in-alt me-1"></i>Sign In
+              </router-link>
+            </li>
+          </template>
         </ul>
       </div>
     </div>
@@ -48,10 +67,48 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
-  name: 'Navbar'
+  name: 'Navbar',
+  setup() {
+    const router = useRouter()
+    const isLoggedIn = ref(false)
+    const userName = ref('')
+    const isAdmin = ref(false)
+
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem('token')
+      const storedName = localStorage.getItem('userName')
+      const userRole = localStorage.getItem('userRole')
+      
+      isLoggedIn.value = !!token
+      userName.value = storedName || ''
+      isAdmin.value = userRole === 'Admin'
+    }
+
+    const handleLogout = () => {
+      localStorage.removeItem('token')
+      localStorage.removeItem('userName')
+      isLoggedIn.value = false
+      userName.value = ''
+      router.push('/login')
+    }
+
+    onMounted(() => {
+      checkLoginStatus()
+      // เพิ่ม event listener สำหรับการ update สถานะ login
+      window.addEventListener('storage', checkLoginStatus)
+    })
+
+    return {
+      isLoggedIn,
+      userName,
+      isAdmin,
+      handleLogout
+    }
+  }
 })
 </script>
 
