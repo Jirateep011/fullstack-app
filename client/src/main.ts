@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
+import { requireAdmin } from './router/guards'
 import App from './App.vue'
 import HomeView from './views/HomeView.vue'
 import AboutView from './views/AboutView.vue'
@@ -10,6 +12,7 @@ import FavoritesView from './views/FavoritesView.vue'
 import CartView from './views/CartView.vue'
 import LoginPage from './views/login_register/LoginPage.vue'
 import RegisterPage from './views/login_register/RegisterPage.vue'
+import AdminPanel from './views/adminViews/AdminPanel.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -21,9 +24,17 @@ const router = createRouter({
     { path: '/about', component: AboutView },
     { path: '/favorites', component: FavoritesView },
     { path: '/cart', component: CartView },
+    { 
+      path: '/admin', 
+      component: AdminPanel,
+      beforeEnter: requireAdmin
+    },
   ]
 })
 
 const app = createApp(App)
+const pinia = createPinia()
+
+app.use(pinia)
 app.use(router)
 app.mount('#app')

@@ -5,6 +5,9 @@
           <div class="card shadow">
             <div class="card-body p-5">
               <h2 class="text-center mb-4">Sign In</h2>
+              <div v-if="errorMessage" class="alert alert-danger">
+                {{ errorMessage }}
+              </div>
               <form @submit.prevent="handleLogin">
                 <div class="mb-3">
                   <label for="email" class="form-label">Email address</label>
@@ -46,50 +49,48 @@
   
   <script lang="ts">
   import { defineComponent, ref } from 'vue'
-  import { useRouter } from 'vue-router'
+  import { useAuthStore } from '../../stores/authStore'
+  import { useRouter, useRoute } from 'vue-router'
   
   export default defineComponent({
     name: 'LoginPage',
     setup() {
+      const authStore = useAuthStore()
+      const router = useRouter()
+      const route = useRoute()
       const email = ref('')
       const password = ref('')
-      const router = useRouter()
+      const errorMessage = ref('')
   
       const handleLogin = async () => {
         try {
-          const response = await fetch('http://localhost:5099/api/auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: email.value,
-              password: password.value,
-            }),
-          })
-  
-          if (!response.ok) {
-            throw new Error('Login failed')
+          const result = await authStore.login(email.value, password.value)
+          
+          if (result.role === 'Admin') {
+            const redirect = route.query.redirect as string
+            if (redirect && redirect.includes('/admin')) {
+              router.push(redirect)
+            } else {
+              router.push('/admin').then(() => {
+                // Reload the page to ensure admin panel is up-to-date
+                window.location.reload()
+              })
+            }
+          } else {
+            router.push('/').then(() => {
+              // Reload the page to ensure user panel is up-to-date
+              window.location.reload()
+            })
           }
-  
-          const data = await response.json()
-          // Store token and user name in localStorage
-          localStorage.setItem('token', data.token)
-          localStorage.setItem('userName', data.name)
-          localStorage.setItem('userRole', data.role)
-          // Redirect to home page
-          router.push('/').then(() => {
-            window.location.reload()
-          })
         } catch (error) {
-          console.error('Login error:', error)
-          alert('Login failed. Please check your credentials.')
+          errorMessage.value = error instanceof Error ? error.message : 'Login failed'
         }
       }
   
       return {
         email,
         password,
+        errorMessage,
         handleLogin
       }
     }
